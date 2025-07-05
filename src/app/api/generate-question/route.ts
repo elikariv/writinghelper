@@ -91,13 +91,22 @@ Please generate a structured preview of the document, improving existing content
     let feedbackContent = ''
     let previewContent = ''
 
-    // Handle the response content
-    if (feedbackCompletion.content[0] && 'text' in feedbackCompletion.content[0]) {
-      feedbackContent = feedbackCompletion.content[0].text
+    if (
+      feedbackCompletion.content &&
+      feedbackCompletion.content[0] &&
+      typeof feedbackCompletion.content[0] === 'object' &&
+      'text' in feedbackCompletion.content[0]
+    ) {
+      feedbackContent = (feedbackCompletion.content[0] as { text: string }).text
     }
 
-    if (previewCompletion.content[0] && 'text' in previewCompletion.content[0]) {
-      previewContent = previewCompletion.content[0].text
+    if (
+      previewCompletion.content &&
+      previewCompletion.content[0] &&
+      typeof previewCompletion.content[0] === 'object' &&
+      'text' in previewCompletion.content[0]
+    ) {
+      previewContent = (previewCompletion.content[0] as { text: string }).text
     }
 
     return NextResponse.json({
@@ -108,15 +117,22 @@ Please generate a structured preview of the document, improving existing content
     })
 
   } catch (error) {
-    console.error('Detailed error:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-    })
-
-    return NextResponse.json(
-      { error: `Server error: ${error.message}` },
-      { status: 500 }
-    )
+    if (error instanceof Error) {
+      console.error('Detailed error:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      })
+      return NextResponse.json(
+        { error: `Server error: ${error.message}` },
+        { status: 500 }
+      )
+    } else {
+      console.error('Unknown error:', error)
+      return NextResponse.json(
+        { error: `Server error: ${JSON.stringify(error)}` },
+        { status: 500 }
+      )
+    }
   }
 }
