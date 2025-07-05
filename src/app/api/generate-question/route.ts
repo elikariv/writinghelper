@@ -87,9 +87,9 @@ Please generate a structured preview of the document, improving existing content
       }]
     })
 
-    // Extract the content from the response correctly
-    const feedbackContent = feedbackCompletion.content[0].value
-    const previewContent = previewCompletion.content[0].value
+    // Get the response content safely
+    const feedbackContent = feedbackCompletion.content[0]?.type === 'text' ? feedbackCompletion.content[0].text : ''
+    const previewContent = previewCompletion.content[0]?.type === 'text' ? previewCompletion.content[0].text : ''
 
     return NextResponse.json({
       question: feedbackContent,
