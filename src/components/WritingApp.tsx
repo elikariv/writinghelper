@@ -63,12 +63,13 @@ export default function WritingApp() {
       setCurrentQuestion(data.question)
       setDocumentPreview(data.documentPreview || '')
     } catch (error) {
-  if (error instanceof Error) {
-    setError(error.message);
-  } else {
-    setError(String(error));
-  }
-}
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(String(error));
+      }
+    }
+  } // <-- This closing brace was missing!
 
   return (
     <div className="max-w-6xl mx-auto p-4">
