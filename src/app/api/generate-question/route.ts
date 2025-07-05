@@ -88,8 +88,17 @@ Please generate a structured preview of the document, improving existing content
     })
 
     // Get the response content safely
-    const feedbackContent = feedbackCompletion.content[0]?.type === 'text' ? feedbackCompletion.content[0].text : ''
-    const previewContent = previewCompletion.content[0]?.type === 'text' ? previewCompletion.content[0].text : ''
+    let feedbackContent = ''
+    let previewContent = ''
+
+    // Handle the response content
+    if (feedbackCompletion.content[0] && 'text' in feedbackCompletion.content[0]) {
+      feedbackContent = feedbackCompletion.content[0].text
+    }
+
+    if (previewCompletion.content[0] && 'text' in previewCompletion.content[0]) {
+      previewContent = previewCompletion.content[0].text
+    }
 
     return NextResponse.json({
       question: feedbackContent,
