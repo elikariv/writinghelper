@@ -63,10 +63,12 @@ export default function WritingApp() {
       setCurrentQuestion(data.question)
       setDocumentPreview(data.documentPreview || '')
     } catch (error) {
-      console.error('Failed to generate next question:', error)
-      setError(error.message)
-    }
+  if (error instanceof Error) {
+    setError(error.message);
+  } else {
+    setError(String(error));
   }
+}
 
   return (
     <div className="max-w-6xl mx-auto p-4">
