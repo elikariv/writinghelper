@@ -90,7 +90,7 @@ export default function WritingApp() {
               </div>
             )}
 
-            {/* Question Display */}
+            {/* Feedback Display */}
             <div className="p-4 bg-blue-100 rounded-lg">
               <h2 className="font-bold mb-2 text-blue-800 text-lg">Question:</h2>
               <p className="whitespace-pre-wrap text-gray-800">{currentQuestion}</p>

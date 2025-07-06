@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     // Generate feedback and next question
     const feedbackCompletion = await anthropic.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 1024,
       system: `You are a supportive writing coach helping a user improve their writing. The user will share a piece of writing they're working on, and you should:
 
@@ -32,6 +32,8 @@ export async function POST(request: Request) {
    - ✨ Enhance clarity or conciseness.
    - 🌱 Develop ideas more fully.
    - 📜 Address organization or structure.
+
+Don't use the exact phrase "actionable tip" every time
 
 ❓ **Reflection Question**:
 Ask one engaging follow-up question to help them think deeper about their ideas or continue writing. Keep it focused and inspiring!
