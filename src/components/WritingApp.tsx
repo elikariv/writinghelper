@@ -116,7 +116,7 @@ export default function WritingApp() {
                 placeholder="Type your response here..."
                 onChange={(e) => handleWordCount(e.target.value)}
               />
-              <p className="text-sm text-gray-600">Word Count: {wordCount} / 10</p>
+              <p className="text-sm text-gray-600">Minimum Word Requirement: {wordCount} / 10</p>
               <button
                 type="submit"
                 className={`w-full px-6 py-3 rounded-lg transition-colors font-bold text-lg ${

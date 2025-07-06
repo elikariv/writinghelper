@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     // Generate feedback and next question
     const feedbackCompletion = await anthropic.messages.create({
-      model: "claude-3-haiku-20240307",
+      model: "claude-3-5-haiku-20241022",
       max_tokens: 1024,
       system: `You are a supportive writing coach helping a user improve their writing. The user will share a piece of writing they're working on, and you should:
 
