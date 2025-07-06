@@ -5,7 +5,7 @@ import { useState } from 'react'
 export default function WritingApp() {
   const [responses, setResponses] = useState<string[]>([])
   const [currentQuestion, setCurrentQuestion] = useState<string>(
-    "What would you like to write about? This can be an essay, a document, an email, or anything you like. Start with 1-2 sentences to start and we'll take it from there."
+    "What would you like to write about? This can be an essay, a document, an email, or anything you like. Start with a few sentences and we can take it from there."
   )
   const [documentPreview, setDocumentPreview] = useState<string>("")
   const [error, setError] = useState<string>("")
@@ -133,7 +133,7 @@ export default function WritingApp() {
 
           {/* Document Preview */}
           <div className="space-y-4">
-            <h2 className="font-bold mb-4 text-blue-800 text-lg">Here's what you've got so far:</h2>
+            <h2 className="font-bold mb-4 text-blue-800 text-lg">Here is what you have so far:</h2>
             <div className="border rounded-lg p-6 bg-gray-50">
               {documentPreview ? (
                 <div className="whitespace-pre-wrap text-gray-800">{documentPreview}</div>
