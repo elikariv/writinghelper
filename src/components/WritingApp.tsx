@@ -2,139 +2,149 @@
 
 import { useState } from 'react'
 
-type DocumentType = 'essay' | 'story' | 'article' | 'product-launch' | 'general'
-type DocumentSection = 'introduction' | 'body' | 'conclusion' | 'main' | 'outline'
-
 export default function WritingApp() {
   const [responses, setResponses] = useState<string[]>([])
   const [currentQuestion, setCurrentQuestion] = useState<string>(
-    "What type of document would you like to create? (essay/story/article/product-launch)"
+    "What would you like to write about? This can be an essay, a document, an email, or anything you like. Start with 1-2 sentences to start and we'll take it from there."
   )
   const [documentPreview, setDocumentPreview] = useState<string>("")
   const [error, setError] = useState<string>("")
-  const [documentType, setDocumentType] = useState<DocumentType>('general')
-  const [currentSection, setCurrentSection] = useState<DocumentSection>('outline')
+  const [wordCount, setWordCount] = useState<number>(0)
 
   const handleResponse = async (response: string) => {
-    setError("")
+    setError("") // Clear previous error messages
+
+    // Check word count for the first response
+    if (responses.length === 0 && wordCount < 10) {
+      setError("Your response must be at least 10 words. Please try again.")
+      return
+    }
+
     const newResponses = [...responses, response]
     setResponses(newResponses)
 
-    // Determine document type from first response
-    if (responses.length === 0) {
-      const lowercaseResponse = response.toLowerCase()
-      if (lowercaseResponse.includes('essay')) setDocumentType('essay')
-      else if (lowercaseResponse.includes('story')) setDocumentType('story')
-      else if (lowercaseResponse.includes('article')) setDocumentType('article')
-      else if (lowercaseResponse.includes('product')) setDocumentType('product-launch')
-      else setDocumentType('general')
-    }
-
-    // Update section based on progress
-    if (responses.length === 1) {
-      setCurrentSection('introduction')
-    } else if (responses.length === 3) {
-      setCurrentSection('body')
-    } else if (responses.length === 5) {
-      setCurrentSection('conclusion')
-    }
-    
     try {
-      const result = await fetch('/api/generate-question', {
+      // Generate a question to help the user expand their thinking
+      const questionResult = await fetch('/api/generate-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           responses: newResponses,
-          documentType: documentType,
-          currentSection: currentSection
         })
       })
-      
-      if (!result.ok) {
-        throw new Error('API request failed')
+
+      if (!questionResult.ok) {
+        throw new Error('Failed to generate question')
       }
 
-      const data = await result.json()
-      
-      if (data.error) {
-        throw new Error(data.error)
+      const questionData = await questionResult.json()
+
+      if (questionData.error) {
+        throw new Error(questionData.error)
       }
 
-      setCurrentQuestion(data.question)
-      setDocumentPreview(data.documentPreview || '')
+      setCurrentQuestion(questionData.question)
+
+      // Generate document preview only after 5 responses
+      if (newResponses.length >= 5) {
+        const previewResult = await fetch('/api/generate-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            responses: newResponses,
+          })
+        })
+
+        const previewData = await previewResult.json()
+
+        if (previewResult.ok && previewData.documentPreview) {
+          setDocumentPreview(previewData.documentPreview)
+        } else {
+          // Show dynamic error message from the backend
+          setError(previewData.error || 'Failed to generate document preview')
+        }
+      }
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
+        setError(error.message)
       } else {
-        setError(String(error));
+        setError(String(error))
       }
     }
-  } // <-- This closing brace was missing!
+  }
+
+  const handleWordCount = (text: string) => {
+    const count = text.split(/\s+/).filter(Boolean).length
+    setWordCount(count)
+  }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          {/* Document Info */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h2 className="font-semibold mb-2">Document Details:</h2>
-            <p>Type: {documentType}</p>
-            <p>Current Section: {currentSection}</p>
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="p-4 bg-red-50 text-red-700 rounded-lg">
-              Error: {error}
-            </div>
-          )}
-
-          {/* Question Display */}
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <h2 className="font-semibold mb-2">Question:</h2>
-            <p className="whitespace-pre-wrap">{currentQuestion}</p>
-          </div>
-
-          {/* Response Form */}
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault()
-              const formData = new FormData(e.currentTarget)
-              const response = formData.get('response') as string
-              if (response.trim()) {
-                handleResponse(response.trim())
-                e.currentTarget.reset()
-              }
-            }} 
-            className="space-y-4"
-          >
-            <textarea
-              name="response"
-              className="w-full p-4 border rounded-lg min-h-[150px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Type your response here..."
-            />
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Submit
-            </button>
-          </form>
-        </div>
-
-        {/* Document Preview */}
-        <div className="border rounded-lg p-6">
-          <h2 className="font-semibold mb-4">Document Preview:</h2>
-          <div className="prose max-w-none">
-            {documentPreview ? (
-              <div className="whitespace-pre-wrap bg-white p-4 rounded-lg border">
-                {documentPreview}
+    <div className="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen p-6">
+      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            {/* Error Display */}
+            {error && (
+              <div className="p-4 bg-red-100 text-red-700 rounded-lg">
+                <strong>Error:</strong> {error}
               </div>
-            ) : (
-              <p className="text-gray-500 italic">
-                Your document preview will appear here as you write...
-              </p>
             )}
+
+            {/* Question Display */}
+            <div className="p-4 bg-blue-100 rounded-lg">
+              <h2 className="font-bold mb-2 text-blue-800 text-lg">Question:</h2>
+              <p className="whitespace-pre-wrap text-gray-800">{currentQuestion}</p>
+            </div>
+
+            {/* Response Form */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const response = formData.get('response') as string
+                if (response.trim()) {
+                  handleResponse(response.trim())
+                  e.currentTarget.reset()
+                  setWordCount(0) // Reset word count after submission
+                }
+              }}
+              className="space-y-4"
+            >
+              <textarea
+                name="response"
+                className="w-full p-4 border rounded-lg min-h-[150px] focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                placeholder="Type your response here..."
+                onChange={(e) => handleWordCount(e.target.value)}
+              />
+              <p className="text-sm text-gray-600">Word Count: {wordCount} / 10</p>
+              <button
+                type="submit"
+                className={`w-full px-6 py-3 rounded-lg transition-colors font-bold text-lg ${
+                  wordCount >= 10
+                    ? 'bg-green-500 text-white hover:bg-green-600 focus:ring-2 focus:ring-green-300'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+                disabled={wordCount < 10}
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+
+          {/* Document Preview */}
+          <div className="space-y-4">
+            <h2 className="font-bold mb-4 text-blue-800 text-lg">Here's what you've got so far: </h2>
+            <div className="border rounded-lg p-6 bg-gray-50">
+              {documentPreview ? (
+                <div className="whitespace-pre-wrap text-gray-800">{documentPreview}</div>
+              ) : responses.length < 5 ? (
+                <p className="text-gray-600 italic">
+                  {error ? error : `Your document preview will appear after you submit ${5 - responses.length} more responses.`}
+                </p>
+              ) : (
+                <p className="text-gray-600 italic">Error generating preview. Please try again.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
