@@ -10,13 +10,16 @@ export default function WritingApp() {
   const [documentPreview, setDocumentPreview] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [wordCount, setWordCount] = useState<number>(0)
+  const [isLoading, setIsLoading] = useState<boolean>(false) // New state for loading animation
 
   const handleResponse = async (response: string) => {
     setError("") // Clear previous error messages
+    setIsLoading(true) // Start loading animation
 
     // Check word count for the first response
     if (responses.length === 0 && wordCount < 10) {
       setError("Your response must be at least 10 words. Please try again.")
+      setIsLoading(false) // Stop loading animation
       return
     }
 
@@ -71,6 +74,8 @@ export default function WritingApp() {
         setError(String(error))
       }
     }
+
+    setIsLoading(false) // Stop loading animation
   }
 
   const handleWordCount = (text: string) => {
@@ -83,6 +88,13 @@ export default function WritingApp() {
       <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
+            {/* Loading Animation */}
+            {isLoading && (
+              <div className="flex justify-center items-center">
+                <div className="loader"></div> {/* Add CSS for spinner */}
+              </div>
+            )}
+
             {/* Error Display */}
             {error && (
               <div className="p-4 bg-red-100 text-red-700 rounded-lg">
